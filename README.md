@@ -15,33 +15,29 @@ Fanap's POD Async iOS SDK
 ## Intit
 
 ```swift
-@Builder
-@Getter
-AsyncConfig {
-    boolean isSocketProvider;
-    String token;
-    String serverName;
-    String ssoHost;
-    String queueServer;
-    String queuePort;
-    String queueInput;
-    String queueOutput;
-    String queueUserName;
-    String queuePassword;
-    int queueReconnectTime;
-    String socketAddress;
-    boolean isLoggable;
-    String appId = "POD-Chat";
-    
-    
- private Async(AsyncConfig config) {
-        this.config = config;
-        if (config.isSocketProvider()) {
-            provider = new SocketProvider(config, this);
-        } else {
-            provider = new ActiveMq(config, this);
-        }
-    }        
+AsyncConfig asyncConfig = AsyncConfig
+                .builder()
+                .isSocketProvider(isSocket)
+                .socketAddress(socketAddress)
+                .serverName(serverName)
+                .queuePassword(queuePassword)
+                .queueUserName(queueUserName)
+                .queueInput(queueInput)
+                .queueOutput(queueOutput)
+                .queueServer(queueServer)
+                .queuePort(queuePort)
+                .isLoggable(true)
+                .appId("PodChat")
+                .build();
+                
+if (asyncconfig.isSocketProvider()) 
+{
+     provider = new SocketProvider(config, this);
+} 
+else 
+{
+     provider = new ActiveMq(config, this);
+}                
 ```
 
 ## Connection State
@@ -49,9 +45,11 @@ AsyncConfig {
 Notice: Use the connection only it's in <b>ASYNC_READY</b> state
 
 ```swift
-  public void sendMessage(String textContent, AsyncMessageType messageType) {
-        try {
-            if (state == AsyncState.AsyncReady) { ... }
+if (clientMessage.getSenderName().equals(config.getServerName())) 
+{
+           isServerRegistered = true;
+           listener.onSocketReady();
+}           
 ```
 
 <br/>
