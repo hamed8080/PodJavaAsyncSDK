@@ -5,8 +5,6 @@ import asyncSdk.exception.ConnectionException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import asyncSdk.model.*;
-
-
 import java.util.Date;
 
 public class Async implements AsyncProviderListener {
@@ -16,7 +14,7 @@ public class Async implements AsyncProviderListener {
     private static Async instance;
     private MessageWrapperVo messageWrapperVo;
     private static Gson gson;
-    AsyncState state;
+    private AsyncState state;
     private final AsyncConfig config;
     private AsyncListener listener;
 

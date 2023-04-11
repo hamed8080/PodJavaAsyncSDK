@@ -13,13 +13,13 @@ import java.net.URISyntaxException;
 public class SocketProvider implements AsyncProvider {
     private final AsyncConfig config;
     private Session session;
-    AsyncProviderListener listener;
+    private AsyncProviderListener listener;
     private final Gson gson = new Gson();
     private String deviceId;
     private boolean isServerRegistered;
     private boolean isDeviceRegistered;
     private Integer peerId;
-    ClientMessage clientMessage;
+    private ClientMessage clientMessage;
 
     public SocketProvider(AsyncConfig config, AsyncProviderListener listener) {
         this.config = config;
