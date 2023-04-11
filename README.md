@@ -17,21 +17,21 @@ Fanap's POD Async iOS SDK
 ```swift
 @Builder
 @Getter
-public class AsyncConfig {
-    private boolean isSocketProvider;
-    private String token;
-    private String serverName;
-    private String ssoHost;
-    private String queueServer;
-    private String queuePort;
-    private String queueInput;
-    private String queueOutput;
-    private String queueUserName;
-    private String queuePassword;
-    private int queueReconnectTime;
-    private String socketAddress;
-    private boolean isLoggable;
-    private String appId = "POD-Chat";
+AsyncConfig {
+    boolean isSocketProvider;
+    String token;
+    String serverName;
+    String ssoHost;
+    String queueServer;
+    String queuePort;
+    String queueInput;
+    String queueOutput;
+    String queueUserName;
+    String queuePassword;
+    int queueReconnectTime;
+    String socketAddress;
+    boolean isLoggable;
+    String appId = "POD-Chat";
     
     
  private Async(AsyncConfig config) {
