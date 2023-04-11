@@ -1,5 +1,6 @@
 package asyncSdk;
 
+import asyncSdk.model.AsyncState;
 import com.google.gson.Gson;
 import asyncSdk.exception.ConnectionException;
 import org.apache.logging.log4j.LogManager;

@@ -1,5 +1,7 @@
 package asyncSdk;
 
+import asyncSdk.AsyncProviderListener;
+
 public interface AsyncProvider {
     AsyncProviderListener listener = null;
     void connect();

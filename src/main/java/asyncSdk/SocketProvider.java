@@ -1,7 +1,7 @@
 package asyncSdk;
 
-import com.google.gson.Gson;
 import asyncSdk.model.*;
+import com.google.gson.Gson;
 
 import javax.websocket.*;
 import java.io.IOException;

@@ -6,6 +6,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.qpid.amqp_1_0.jms.impl.QueueImpl;
 
 import javax.jms.*;
+import javax.jms.Message;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.atomic.AtomicBoolean;

@@ -1,6 +1,8 @@
 package asyncSdk.model;
 
-    /**
+import asyncSdk.model.AsyncMessageType;
+
+/**
      * {@param type } type of message based on type of content
      * {@param trackerId} tracker id of message that received from platform previously
      */

@@ -1,5 +1,7 @@
 package asyncSdk.model;
 
+import asyncSdk.model.AsyncMessageType;
+
 /**
  * Messages that send from server to client
  * <p>
