@@ -13,7 +13,7 @@ public enum AsyncMessageType {
     PeerRemoved(-3),
     ErrorMessage(-99),
     Unknown(-100);
-
+    @SuppressWarnings("unused")
     final int value;
 
     AsyncMessageType(int value) {

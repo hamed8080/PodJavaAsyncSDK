@@ -2,38 +2,26 @@ package asyncSdk;
 
 import asyncSdk.model.AsyncState;
 import com.google.gson.Gson;
-import asyncSdk.exception.ConnectionException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import asyncSdk.model.*;
 import java.util.Date;
-
-public class Async implements AsyncProviderListener {
+public final class Async implements AsyncProviderListener {
     private static final Logger logger = LogManager.getLogger(Async.class);
     private static AsyncProvider provider;
     private static final String TAG = "asyncSdk.Async" + " ";
-    private static Async instance;
-    private MessageWrapperVo messageWrapperVo;
-    private static Gson gson;
+    static Gson gson = new Gson();
     private AsyncState state;
     private final AsyncConfig config;
     private AsyncListener listener;
 
-    private Async(AsyncConfig config) {
+    public Async(AsyncConfig config) {
         this.config = config;
         if (config.isSocketProvider()) {
             provider = new SocketProvider(config, this);
         } else {
             provider = new ActiveMq(config, this);
         }
-    }
-
-    public static Async getInstance(AsyncConfig config) {
-        if (instance == null) {
-            gson = new Gson();
-            instance = new Async(config);
-        }
-        return instance;
     }
 
     @Override
@@ -61,21 +49,22 @@ public class Async implements AsyncProviderListener {
 
     @Override
     public void onMessage(String textMessage) {
-        ClientMessage clientMessage = gson.fromJson(textMessage, ClientMessage.class);
-        AsyncMessageType type = clientMessage.getType();
+        AsyncMessage asyncMessage = gson.fromJson(textMessage, AsyncMessage.class);
+        AsyncMessageType type = asyncMessage.getType();
         switch (type) {
             case Ack:
-                handleOnAck(clientMessage);
+                handleOnAck(asyncMessage);
                 break;
+
             case ErrorMessage:
-                handleOnErrorMessage(clientMessage);
+                handleOnErrorMessage(asyncMessage);
                 break;
             case MessageAckNeeded:
             case MessageSenderAckNeeded:
-                handleOnMessageAckNeeded(clientMessage);
+                handleOnMessageAckNeeded(asyncMessage);
                 break;
             case Message:
-                handleOnMessage(clientMessage);
+                handleOnMessage(asyncMessage);
                 break;
             case PeerRemoved:
                 break;
@@ -84,37 +73,20 @@ public class Async implements AsyncProviderListener {
 
     @Override
     public void onError(Exception exception) {
-
+        logger.info("Error is : " + exception);
     }
 
-    public void connect() throws ConnectionException {
+    @SuppressWarnings("unused")
+    public void connect() throws Exception {
         setState(AsyncState.Connecting);
         provider.connect();
     }
 
     /**
-     * @Param textContent
-     * @Param messageType it could be 3, 4, 5
-     * @Param []receiversId the Id's that we want to send
+     * First we are checking the state of the socket then we send the message
      */
+    @SuppressWarnings("unused")
     public void sendMessage(String textContent, AsyncMessageType messageType, long[] receiversId) {
-        try {
-            Message message = new Message();
-            message.setContent(textContent);
-            message.setReceivers(receiversId);
-            String jsonMessage = gson.toJson(message);
-            String wrapperJsonString = getMessageWrapper(gson, jsonMessage, messageType);
-            sendData(wrapperJsonString);
-        } catch (Exception e) {
-            listener.onError(e);
-            showErrorLog("asyncSdk.Async: connect", e.getCause().getMessage());
-        }
-    }
-
-    /**
-     * First we checking the state of the socket then we send the message
-     */
-    public void sendMessage(String textContent, AsyncMessageType messageType) {
         try {
             if (state == AsyncState.AsyncReady) {
                 long ttl = new Date().getTime();
@@ -123,12 +95,14 @@ public class Async implements AsyncProviderListener {
                 message.setPriority(1);
                 message.setPeerName(config.getServerName());
                 message.setTtl(ttl);
-                String json = gson.toJson(message);
-                messageWrapperVo = new MessageWrapperVo();
-                messageWrapperVo.setContent(json);
-                messageWrapperVo.setType(messageType);
-                String json1 = gson.toJson(messageWrapperVo);
-                sendData(json1);
+                message.setReceivers(receiversId);
+                String messageContent = gson.toJson(message);
+                AsyncMessage asyncMessage = new AsyncMessage();
+                asyncMessage.setContent(messageContent);
+                asyncMessage.setType(messageType);
+                String json = gson.toJson(asyncMessage);
+                provider.send(json);
+                logger.info("Send message: " + json);
             } else {
                 showErrorLog(TAG + "Socket Is Not Connected");
             }
@@ -138,37 +112,36 @@ public class Async implements AsyncProviderListener {
         }
     }
 
-    /**
-     * Connect webSocket to the asyncSdk.Async
-     *
-     * @Param socketServerAddress
-     * @Param appId
-     */
-    private void handleOnAck(ClientMessage clientMessage) {
-        listener.onReceivedMessage(clientMessage.getContent());
+
+    private void handleOnAck(AsyncMessage asyncMessage) {
+        listener.onReceivedMessage(asyncMessage);
     }
 
-    private void sendData(String jsonMessageWrapperVo) {
-        provider.send(jsonMessageWrapperVo);
+    @SuppressWarnings("all")
+    private void sendInternalMessage(String message, AsyncMessageType type) {
+        AsyncMessage asyncMessage = new AsyncMessage();
+        asyncMessage.setContent(message);
+        asyncMessage.setType(type);
+        String json = gson.toJson(asyncMessage);
+        provider.send(json);
+        logger.info("Send an internal Message " + json);
     }
 
-    private void handleOnErrorMessage(ClientMessage clientMessage) {
-        showErrorLog(TAG + "OnErrorMessage", clientMessage.getContent());
+    private void handleOnErrorMessage(AsyncMessage asyncMessage) {
+        showErrorLog(TAG + "OnErrorMessage", asyncMessage.getContent());
     }
 
-    private void handleOnMessage(ClientMessage clientMessage) {
-        listener.onReceivedMessage(clientMessage.getContent());
+    private void handleOnMessage(AsyncMessage asyncMessage) {
+        listener.onReceivedMessage(asyncMessage);
     }
 
-    private void handleOnMessageAckNeeded(ClientMessage clientMessage) {
+    private void handleOnMessageAckNeeded(AsyncMessage asyncMessage) {
         try {
             if (provider != null) {
-                handleOnMessage(clientMessage);
+                handleOnMessage(asyncMessage);
                 Message messageSenderAckNeeded = new Message();
-                messageSenderAckNeeded.setMessageId(clientMessage.getId());
-                String jsonSenderAckNeeded = gson.toJson(messageSenderAckNeeded);
-                String jsonSenderAckNeededWrapper = getMessageWrapper(gson, jsonSenderAckNeeded, AsyncMessageType.Ack);
-                sendData(jsonSenderAckNeededWrapper);
+                messageSenderAckNeeded.setMessageId(asyncMessage.getId());
+                sendInternalMessage(gson.toJson(messageSenderAckNeeded), AsyncMessageType.Ack);
             } else {
                 showErrorLog("WebSocket Is Null ");
             }
@@ -177,25 +150,14 @@ public class Async implements AsyncProviderListener {
         }
     }
 
-    private String getMessageWrapper(Gson gson, String json, AsyncMessageType messageType) {
-        try {
-            messageWrapperVo = new MessageWrapperVo();
-            messageWrapperVo.setContent(json);
-            messageWrapperVo.setType(messageType);
-            return gson.toJson(messageWrapperVo);
-        } catch (Exception e) {
-            showErrorLog(e.getCause().getMessage());
-        }
-        return null;
-    }
-
+    @SuppressWarnings("unused")
     public AsyncState getState() {
         return state;
     }
 
     private void setState(AsyncState state) {
         this.state = state;
-        listener.onStateChanged(this.state);
+        listener.onStateChanged(this.state, this);
     }
 
     private void showErrorLog(String i, String json) {
@@ -206,8 +168,8 @@ public class Async implements AsyncProviderListener {
         if (config.isLoggable()) logger.error("\n \n" + e);
     }
 
+    @SuppressWarnings("unused")
     public void setListener(AsyncListener listener) {
         this.listener = listener;
     }
 }
-

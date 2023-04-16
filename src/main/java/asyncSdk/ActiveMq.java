@@ -16,7 +16,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * Created By Khojasteh on 7/24/2019
  */
 public class ActiveMq implements AsyncProvider {
-    private static Logger logger = LogManager.getLogger(ActiveMq.class);
+    private static final Logger logger = LogManager.getLogger(ActiveMq.class);
     private MessageProducer producer;
     private MessageConsumer consumer;
 
@@ -42,10 +42,10 @@ public class ActiveMq implements AsyncProvider {
     private Connection conConnection;
     private final Destination inputQueue;
     private final Destination outputQueue;
-    private AsyncConfig config;
+    private final AsyncConfig config;
     private final AtomicBoolean reconnect = new AtomicBoolean(false);
-    ConnectionFactory factory;
-    AsyncProviderListener listener;
+    final ConnectionFactory factory;
+    final AsyncProviderListener listener;
 
     public ActiveMq(AsyncConfig config, AsyncProviderListener listener) {
         this.listener = listener;
@@ -56,13 +56,14 @@ public class ActiveMq implements AsyncProvider {
                 config.getQueueUserName(),
                 config.getQueuePassword(),
                 new StringBuilder()
-                        .append("failover:(tcp://")
-                        .append(config.getQueueServer())
-                        .append(":")
-                        .append(config.getQueuePort())
-                        .append(")?jms.useAsyncSend=true")
-                        .append("&jms.sendTimeout=").append(config.getQueueReconnectTime())
-                        .toString());
+                .append("failover:(tcp://")
+                .append(config.getQueueServer())
+                .append(":")
+                .append(config.getQueuePort())
+                .append(")?jms.useAsyncSend=true")
+                .append("&jms.sendTimeout=").append(config.getQueueReconnectTime())
+                .toString());
+
 
         if (factory != null) {
             connect();
@@ -107,7 +108,7 @@ public class ActiveMq implements AsyncProvider {
             reconnect.set(false);
         }
     }
-
+    @SuppressWarnings("unused")
     @Override
     public void send(String messageWrapperVO) {
         try {
@@ -119,7 +120,7 @@ public class ActiveMq implements AsyncProvider {
             logger.error("An asyncSdk.exception in sending message" + e);
         }
     }
-
+    @SuppressWarnings("unused")
     public void shutdown() throws JMSException {
         this.conConnection.close();
         this.proConnection.close();

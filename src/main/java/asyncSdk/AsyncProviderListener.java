@@ -1,7 +1,5 @@
 package asyncSdk;
-
-import asyncSdk.AsyncListener;
-
+@SuppressWarnings("unused")
 public interface AsyncProviderListener {
     AsyncListener listener = null;
     void onOpen();

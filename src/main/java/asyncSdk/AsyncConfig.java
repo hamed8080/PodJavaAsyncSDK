@@ -1,8 +1,12 @@
 package asyncSdk;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-
+import lombok.NoArgsConstructor;
+@SuppressWarnings("all")
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
 @Getter
 public class AsyncConfig {

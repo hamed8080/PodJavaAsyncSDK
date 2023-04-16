@@ -1,8 +1,7 @@
 package asyncSdk.model;
-
-public class RegisterServer {
+public final class RegisterServer {
     /// The name of the server.
-    String name;
+    final String name;
 
     /// The name of the server.
     /// - Parameter name: The server name.

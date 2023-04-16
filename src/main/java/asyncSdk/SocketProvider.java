@@ -7,19 +7,19 @@ import javax.websocket.*;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Timer;
+import java.util.TimerTask;
 
-
+@SuppressWarnings("unused")
 @ClientEndpoint
 public class SocketProvider implements AsyncProvider {
     private final AsyncConfig config;
     private Session session;
-    private AsyncProviderListener listener;
+    private final AsyncProviderListener listener;
     private final Gson gson = new Gson();
     private String deviceId;
     private boolean isServerRegistered;
-    private boolean isDeviceRegistered;
     private Integer peerId;
-    private ClientMessage clientMessage;
 
     public SocketProvider(AsyncConfig config, AsyncProviderListener listener) {
         this.config = config;
@@ -53,19 +53,36 @@ public class SocketProvider implements AsyncProvider {
     @OnMessage
     public void onMessage(String message, Session session) {
         listener.onMessage(message);
-        clientMessage = gson.fromJson(message, ClientMessage.class);
-        AsyncMessageType type = clientMessage.getType();
+        AsyncMessage asyncMessage = gson.fromJson(message, AsyncMessage.class);
+        AsyncMessageType type = asyncMessage.getType();
+        prepareTimerForNextPing();
         switch (type) {
             case Ping:
-                onPingMessage(clientMessage);
+                onPingMessage(asyncMessage);
                 break;
             case ServerRegister:
-                onServerRegisteredMessage(clientMessage);
+                onServerRegisteredMessage(asyncMessage);
                 break;
             case DeviceRegister:
-                onDeviceRegisteredMessage(clientMessage);
+                onDeviceRegisteredMessage(asyncMessage);
                 break;
         }
+    }
+
+    private void prepareTimerForNextPing() {
+        new Timer().schedule(new TimerTask() {
+            @Override
+            public void run() {
+                sendPing();
+            }
+        }, 10);
+    }
+
+    private void sendPing() {
+        AsyncMessage asyncMessage = new AsyncMessage();
+        asyncMessage.setType(AsyncMessageType.Ping);
+        String message = gson.toJson(asyncMessage);
+        send(message);
     }
 
     private void registerDevice() {
@@ -83,10 +100,10 @@ public class SocketProvider implements AsyncProvider {
 
     private String getMessageWrapper(AsyncMessageType serverRegister, String content) {
         if (content != null) {
-            MessageWrapperVo messageWrapperVo = new MessageWrapperVo();
-            messageWrapperVo.setContent(content);
-            messageWrapperVo.setType(serverRegister);
-            return gson.toJson(messageWrapperVo);
+            AsyncMessage asyncMessage = new AsyncMessage();
+            asyncMessage.setContent(content);
+            asyncMessage.setType(serverRegister);
+            return gson.toJson(asyncMessage);
         } else {
             return null;
         }
@@ -102,17 +119,17 @@ public class SocketProvider implements AsyncProvider {
         listener.onError(new Exception(throwable.getCause().getMessage()));
     }
 
-    private void onPingMessage(ClientMessage clientMessage) {
-        if (clientMessage.getContent() != null) {
+    private void onPingMessage(AsyncMessage asyncMessage) {
+        if (asyncMessage.getContent() != null) {
             if (deviceId == null) {
-                deviceId = clientMessage.getContent();
+                deviceId = asyncMessage.getContent();
             }
             registerDevice();
         }
     }
 
-    private void onServerRegisteredMessage(ClientMessage clientMessage) {
-        if (clientMessage.getSenderName().equals(config.getServerName())) {
+    private void onServerRegisteredMessage(AsyncMessage asyncMessage) {
+        if (asyncMessage.getSenderName().equals(config.getServerName())) {
             isServerRegistered = true;
             listener.onSocketReady();
         } else {
@@ -120,11 +137,10 @@ public class SocketProvider implements AsyncProvider {
         }
     }
 
-    private void onDeviceRegisteredMessage(ClientMessage clientMessage) {
-        isDeviceRegistered = true;
+    private void onDeviceRegisteredMessage(AsyncMessage asyncMessage) {
         Integer oldPeerId = peerId;
-        if (clientMessage.getContent() != null) {
-            peerId = Integer.parseInt(clientMessage.getContent());
+        if (asyncMessage.getContent() != null) {
+            peerId = Integer.parseInt(asyncMessage.getContent());
         }
 
         if (isServerRegistered && peerId.equals(oldPeerId)) {

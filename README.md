@@ -1,6 +1,6 @@
 # # FanapPodAsyncSDK
 
-<img src="https://gitlab.com/hamed8080/fanappodasyncsdk/-/raw/gl-pages/.docs/favicon.svg"  width="64" height="64">
+<img src="https://gitlab.com/hamed8080/fanappodasyncsdk/-/raw/gl-pages/.docs/favicon.svg"  width="64" height="64" alt="">
 <br />
 <br />
 
