@@ -1,5 +1,5 @@
 package asyncSdk.model;
-
+@SuppressWarnings("unused")
 public final class RegisterDevice {
 
     /// A boolean is set to true if the peerId has never set before.

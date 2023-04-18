@@ -6,7 +6,6 @@ import org.apache.logging.log4j.Logger;
 import org.apache.qpid.amqp_1_0.jms.impl.QueueImpl;
 
 import javax.jms.*;
-import javax.jms.Message;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -55,24 +54,15 @@ public class ActiveMq implements AsyncProvider {
         factory = new ActiveMQConnectionFactory(
                 config.getQueueUserName(),
                 config.getQueuePassword(),
-                new StringBuilder()
-                .append("failover:(tcp://")
-                .append(config.getQueueServer())
-                .append(":")
-                .append(config.getQueuePort())
-                .append(")?jms.useAsyncSend=true")
-                .append("&jms.sendTimeout=").append(config.getQueueReconnectTime())
-                .toString());
-
-
-        if (factory != null) {
-            connect();
-        } else {
-            logger.error("An asyncSdk.exception occurred...");
-        }
+                "failover:(tcp://" +
+                        config.getQueueServer() +
+                        ":" +
+                        config.getQueuePort() +
+                        ")?jms.useAsyncSend=true" +
+                        "&jms.sendTimeout=" + config.getQueueReconnectTime());
     }
 
-    public void connect() {
+    public void connect() throws JMSException {
         if (reconnect.compareAndSet(false, true)) {
             while (true) {
                 try {
@@ -97,17 +87,14 @@ public class ActiveMq implements AsyncProvider {
 
                 } catch (JMSException exception) {
                     logger.error("Reconnecting asyncSdk.exception");
-                    try {
-                        Thread.sleep(2000);
-                    } catch (InterruptedException e1) {
-                        logger.error(e1);
-                    }
                     close();
+                    throw exception;
                 }
             }
             reconnect.set(false);
         }
     }
+
     @SuppressWarnings("unused")
     @Override
     public void send(String messageWrapperVO) {
@@ -120,6 +107,7 @@ public class ActiveMq implements AsyncProvider {
             logger.error("An asyncSdk.exception in sending message" + e);
         }
     }
+
     @SuppressWarnings("unused")
     public void shutdown() throws JMSException {
         this.conConnection.close();
@@ -163,7 +151,7 @@ public class ActiveMq implements AsyncProvider {
             try {
                 Thread.sleep(config.getQueueReconnectTime());
                 connect();
-            } catch (InterruptedException e) {
+            } catch (Exception e) {
                 showErrorLog("An asyncSdk.exception occurred: " + e);
             }
         }

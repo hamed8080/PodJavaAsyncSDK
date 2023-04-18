@@ -1,4 +1,6 @@
 package asyncSdk.model;
+
+@SuppressWarnings("unused")
 public final class RegisterServer {
     /// The name of the server.
     final String name;

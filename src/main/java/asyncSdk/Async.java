@@ -1,6 +1,5 @@
 package asyncSdk;
 
-import asyncSdk.model.AsyncState;
 import com.google.gson.Gson;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -10,7 +9,7 @@ public final class Async implements AsyncProviderListener {
     private static final Logger logger = LogManager.getLogger(Async.class);
     private static AsyncProvider provider;
     private static final String TAG = "asyncSdk.Async" + " ";
-    static Gson gson = new Gson();
+    static final Gson gson = new Gson();
     private AsyncState state;
     private final AsyncConfig config;
     private AsyncListener listener;
@@ -24,6 +23,7 @@ public final class Async implements AsyncProviderListener {
         }
     }
 
+    @SuppressWarnings("unused")
     @Override
     public void onOpen() {
         if (config.isSocketProvider()) {
@@ -33,11 +33,13 @@ public final class Async implements AsyncProviderListener {
         }
     }
 
+    @SuppressWarnings("unused")
     @Override
     public void onClose() {
         setState(AsyncState.Closed);
     }
 
+    @SuppressWarnings("unused")
     @Override
     public void onSocketReady() {
         setState(AsyncState.AsyncReady);
@@ -46,7 +48,7 @@ public final class Async implements AsyncProviderListener {
     /**
      * @param textMessage that received when socket send message to asyncSdk.Async
      */
-
+    @SuppressWarnings("unused")
     @Override
     public void onMessage(String textMessage) {
         AsyncMessage asyncMessage = gson.fromJson(textMessage, AsyncMessage.class);
@@ -71,6 +73,7 @@ public final class Async implements AsyncProviderListener {
         }
     }
 
+    @SuppressWarnings("unused")
     @Override
     public void onError(Exception exception) {
         logger.info("Error is : " + exception);
@@ -149,6 +152,7 @@ public final class Async implements AsyncProviderListener {
             showErrorLog(e.getCause().getMessage());
         }
     }
+    public void testHamed(){}
 
     @SuppressWarnings("unused")
     public AsyncState getState() {
