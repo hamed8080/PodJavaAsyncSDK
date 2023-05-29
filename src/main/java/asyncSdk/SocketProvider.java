@@ -28,6 +28,7 @@ public class SocketProvider implements AsyncProvider {
 
     public void connect() {
         WebSocketContainer container = ContainerProvider.getWebSocketContainer();
+        container.setDefaultMaxTextMessageBufferSize(10*1024*1024);
         try {
             session = container.connectToServer(this, new URI(config.getSocketAddress()));
             onOpen(session);
@@ -46,7 +47,7 @@ public class SocketProvider implements AsyncProvider {
     }
 
     @OnOpen
-    private void onOpen(Session session) {
+    public void onOpen(Session session) {
         listener.onOpen();
     }
 
@@ -110,12 +111,12 @@ public class SocketProvider implements AsyncProvider {
     }
 
     @OnClose
-    private void close(Session session, CloseReason reason) {
+    public void close(Session session, CloseReason reason) {
         listener.onClose();
     }
 
     @OnError
-    private void onError(Session session, Throwable throwable) {
+    public void onError(Session session, Throwable throwable) {
         listener.onError(new Exception(throwable.getCause().getMessage()));
     }
 
