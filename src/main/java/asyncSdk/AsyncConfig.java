@@ -24,4 +24,7 @@ public class AsyncConfig {
     private String socketAddress;
     private boolean isLoggable;
     private String appId = "POD-Chat";
+    private Long maxReconnectCount = 5L;
+    private Long reconnectInterval = 5000L;
+    private Long checkConnectionLastMessageInterval = 5000L;
 }

@@ -4,7 +4,11 @@ import com.google.gson.Gson;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import asyncSdk.model.*;
+
 import java.util.Date;
+import java.util.Timer;
+import java.util.TimerTask;
+
 public final class Async implements AsyncProviderListener {
     private static final Logger logger = LogManager.getLogger(Async.class);
     private static AsyncProvider provider;
@@ -13,6 +17,9 @@ public final class Async implements AsyncProviderListener {
     private AsyncState state;
     private final AsyncConfig config;
     private AsyncListener listener;
+    private Timer connectionCheckTimer;
+    private Date lastReceivedMessage;
+    private Long reconnectCount = 1L;
 
     public Async(AsyncConfig config) {
         this.config = config;
@@ -51,13 +58,14 @@ public final class Async implements AsyncProviderListener {
     @SuppressWarnings("unused")
     @Override
     public void onMessage(String textMessage) {
+        lastReceivedMessage = new Date();
+        scheduleConnectionTimer();
         AsyncMessage asyncMessage = gson.fromJson(textMessage, AsyncMessage.class);
         AsyncMessageType type = asyncMessage.getType();
         switch (type) {
             case Ack:
                 handleOnAck(asyncMessage);
                 break;
-
             case ErrorMessage:
                 handleOnErrorMessage(asyncMessage);
                 break;
@@ -70,6 +78,47 @@ public final class Async implements AsyncProviderListener {
                 break;
             case PeerRemoved:
                 break;
+        }
+    }
+
+    private void scheduleConnectionTimer() {
+        if (provider instanceof ActiveMq) {return;}
+        stopTimer();
+        reconnectCount = 1L;
+        connectionCheckTimer = new Timer();
+        connectionCheckTimer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                reconnectIfPossible();
+            }
+        }, 0, config.getReconnectInterval());
+    }
+
+    private void reconnectIfPossible() {
+        long triggerTime = lastReceivedMessage.getTime() + config.getCheckConnectionLastMessageInterval();
+        boolean isPastTriggerTime = triggerTime < new Date().getTime();
+        if (reconnectCount <= config.getMaxReconnectCount() && isPastTriggerTime) {
+            reconnect();
+        } else if (reconnectCount > config.getMaxReconnectCount()) {
+            stopTimer();
+            listener.onStateChanged(AsyncState.Closed, this);
+        }
+    }
+
+    private void reconnect() {
+        try {
+            logger.info("Reconnecting for " + reconnectCount + " times");
+            reconnectCount++;
+            connect();
+        } catch (Exception e) {
+            logger.error("Error on reconnecting ", e);
+        }
+    }
+
+    private void stopTimer() {
+        if (connectionCheckTimer != null) {
+            connectionCheckTimer.cancel();
+            connectionCheckTimer = null;
         }
     }
 
@@ -107,14 +156,15 @@ public final class Async implements AsyncProviderListener {
                 provider.send(json);
                 logger.info("Send message: " + json);
             } else {
-                showErrorLog(TAG + "Socket Is Not Connected");
+                showErrorLog(TAG + "Socket is not connected");
             }
         } catch (Exception e) {
             listener.onError(e);
-            showErrorLog("asyncSdk.Async: connect", e.getCause().getMessage());
+            if (e.getMessage() != null) {
+                showErrorLog("asyncSdk.Async: connect", e.getMessage());
+            }
         }
     }
-
 
     private void handleOnAck(AsyncMessage asyncMessage) {
         listener.onReceivedMessage(asyncMessage);
@@ -152,7 +202,6 @@ public final class Async implements AsyncProviderListener {
             showErrorLog(e.getCause().getMessage());
         }
     }
-    public void testHamed(){}
 
     @SuppressWarnings("unused")
     public AsyncState getState() {

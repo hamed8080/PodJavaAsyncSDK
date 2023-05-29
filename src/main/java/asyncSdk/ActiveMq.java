@@ -84,7 +84,6 @@ public class ActiveMq implements AsyncProvider {
                     proConnection.setExceptionListener(new QueueExceptionListener());
                     logger.info("connection established");
                     break;
-
                 } catch (JMSException exception) {
                     logger.error("Reconnecting asyncSdk.exception");
                     close();

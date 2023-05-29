@@ -16,6 +16,7 @@ JavaAsyncSDK/target/
 .mvn/
 **/.mvn
 .idea
+target/
 
 ### Eclipse ###
 .apt_generated
