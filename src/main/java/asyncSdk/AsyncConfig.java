@@ -23,8 +23,13 @@ public class AsyncConfig {
     private int queueReconnectTime;
     private String socketAddress;
     private boolean isLoggable;
+    @Builder.Default
     private String appId = "POD-Chat";
+
+    @Builder.Default
     private Long maxReconnectCount = 5L;
+    @Builder.Default
     private Long reconnectInterval = 5000L;
+    @Builder.Default
     private Long checkConnectionLastMessageInterval = 5000L;
 }

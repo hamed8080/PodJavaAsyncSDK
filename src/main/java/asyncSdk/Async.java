@@ -26,7 +26,7 @@ public final class Async implements AsyncProviderListener {
         if (config.isSocketProvider()) {
             provider = new SocketProvider(config, this);
         } else {
-            provider = new ActiveMq(config, this);
+            provider = new ActiveMQProvider(config, this);
         }
     }
 
@@ -82,7 +82,7 @@ public final class Async implements AsyncProviderListener {
     }
 
     private void scheduleConnectionTimer() {
-        if (provider instanceof ActiveMq) {return;}
+        if (provider instanceof ActiveMQProvider) {return;}
         stopTimer();
         reconnectCount = 1L;
         connectionCheckTimer = new Timer();

@@ -20,6 +20,7 @@ public class SocketProvider implements AsyncProvider {
     private String deviceId;
     private boolean isServerRegistered;
     private Integer peerId;
+    private Timer pingTimer;
 
     public SocketProvider(AsyncConfig config, AsyncProviderListener listener) {
         this.config = config;
@@ -71,12 +72,21 @@ public class SocketProvider implements AsyncProvider {
     }
 
     private void prepareTimerForNextPing() {
-        new Timer().schedule(new TimerTask() {
+        stopPingTimer();
+        pingTimer = new Timer();
+        pingTimer.schedule(new TimerTask() {
             @Override
             public void run() {
                 sendPing();
             }
         }, 10);
+    }
+
+    private void stopPingTimer() {
+        if (pingTimer != null) {
+            pingTimer.cancel();
+            pingTimer = null;
+        }
     }
 
     private void sendPing() {
@@ -113,6 +123,7 @@ public class SocketProvider implements AsyncProvider {
     @OnClose
     public void close(Session session, CloseReason reason) {
         listener.onClose();
+        stopPingTimer();
     }
 
     @OnError

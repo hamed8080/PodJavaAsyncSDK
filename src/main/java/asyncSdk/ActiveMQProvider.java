@@ -14,8 +14,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * Created By Khojasteh on 7/24/2019
  */
-public class ActiveMq implements AsyncProvider {
-    private static final Logger logger = LogManager.getLogger(ActiveMq.class);
+public class ActiveMQProvider implements AsyncProvider {
+    private static final Logger logger = LogManager.getLogger(ActiveMQProvider.class);
     private MessageProducer producer;
     private MessageConsumer consumer;
 
@@ -46,7 +46,7 @@ public class ActiveMq implements AsyncProvider {
     final ConnectionFactory factory;
     final AsyncProviderListener listener;
 
-    public ActiveMq(AsyncConfig config, AsyncProviderListener listener) {
+    public ActiveMQProvider(AsyncConfig config, AsyncProviderListener listener) {
         this.listener = listener;
         this.config = config;
         inputQueue = new QueueImpl(config.getQueueInput());
