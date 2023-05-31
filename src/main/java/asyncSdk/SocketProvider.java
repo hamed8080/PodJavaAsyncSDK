@@ -79,7 +79,7 @@ public class SocketProvider implements AsyncProvider {
             public void run() {
                 sendPing();
             }
-        }, 10);
+        }, 0, 10 * 1000);
     }
 
     private void stopPingTimer() {

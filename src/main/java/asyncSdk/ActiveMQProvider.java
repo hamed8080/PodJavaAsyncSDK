@@ -82,6 +82,7 @@ public class ActiveMQProvider implements AsyncProvider {
                     conConnection.setExceptionListener(new QueueExceptionListener());
                     proConnection.setExceptionListener(new QueueExceptionListener());
                     proConnection.setExceptionListener(new QueueExceptionListener());
+                    listener.onOpen();
                     logger.info("connection established");
                     break;
                 } catch (JMSException exception) {
