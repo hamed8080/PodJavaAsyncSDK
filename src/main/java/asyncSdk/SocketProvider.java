@@ -104,12 +104,14 @@ public class SocketProvider implements AsyncProvider {
         RegisterDevice register = peerId == null ? new RegisterDevice(true, config.getAppId(), deviceId) : new RegisterDevice(config.getAppId(), true, deviceId);
         String asyncString = getMessageWrapper(AsyncMessageType.DeviceRegister, gson.toJson(register));
         send(asyncString);
+        logger.info("ASYNC_SDK Send Register Device: \n" + asyncString + "\n");
     }
 
     private void registerServer() {
         RegisterServer register = new RegisterServer(config.getServerName());
         String asyncString = getMessageWrapper(AsyncMessageType.ServerRegister, gson.toJson(register));
         send(asyncString);
+        logger.info("ASYNC_SDK Send Register Server: \n" + asyncString + "\n");
     }
 
     private String getMessageWrapper(AsyncMessageType serverRegister, String content) {
