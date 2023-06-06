@@ -2,6 +2,8 @@ package asyncSdk;
 
 import asyncSdk.model.*;
 import com.google.gson.Gson;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.websocket.*;
 import java.io.IOException;
@@ -13,6 +15,7 @@ import java.util.TimerTask;
 @SuppressWarnings("unused")
 @ClientEndpoint
 public class SocketProvider implements AsyncProvider {
+    private static final Logger logger = LogManager.getContext().getLogger("SDK_LOGGER");
     private final AsyncConfig config;
     private Session session;
     private final AsyncProviderListener listener;
@@ -122,6 +125,9 @@ public class SocketProvider implements AsyncProvider {
     @OnClose
     public void close(Session session, CloseReason reason) {
         listener.onClose();
+        if (reason != null) {
+            logger.info("Close Async Socket with reason: " + reason);
+        }
     }
 
     @OnError
