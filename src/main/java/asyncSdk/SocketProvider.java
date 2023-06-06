@@ -96,6 +96,7 @@ public class SocketProvider implements AsyncProvider {
         asyncMessage.setType(AsyncMessageType.Ping);
         String message = gson.toJson(asyncMessage);
         send(message);
+        logger.info("ASYNC_SDK Send Ping: \n" + message + "\n");
     }
 
     private void registerDevice() {
