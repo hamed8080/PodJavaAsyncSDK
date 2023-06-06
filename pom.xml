@@ -42,13 +42,8 @@
         <dependency>
             <groupId>org.apache.activemq</groupId>
             <artifactId>activemq-client</artifactId>
-            <version>5.18.1</version>
+            <version>5.16.6</version>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.apache.activemq</groupId>-->
-<!--            <artifactId>activemq-core</artifactId>-->
-<!--            <version>5.7.0</version>-->
-<!--        </dependency>-->
         <dependency>
             <groupId>org.apache.qpid</groupId>
             <artifactId>qpid-amqp-1-0-client-jms</artifactId>
