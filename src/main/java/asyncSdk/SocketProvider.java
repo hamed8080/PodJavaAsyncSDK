@@ -57,7 +57,6 @@ public class SocketProvider implements AsyncProvider {
         listener.onMessage(message);
         AsyncMessage asyncMessage = gson.fromJson(message, AsyncMessage.class);
         AsyncMessageType type = asyncMessage.getType();
-        prepareTimerForNextPing();
         switch (type) {
             case Ping:
                 onPingMessage(asyncMessage);
@@ -123,7 +122,6 @@ public class SocketProvider implements AsyncProvider {
     @OnClose
     public void close(Session session, CloseReason reason) {
         listener.onClose();
-        stopPingTimer();
     }
 
     @OnError
@@ -144,6 +142,9 @@ public class SocketProvider implements AsyncProvider {
         if (asyncMessage.getSenderName().equals(config.getServerName())) {
             isServerRegistered = true;
             listener.onSocketReady();
+            if (pingTimer == null) {
+                prepareTimerForNextPing();
+            }
         } else {
             registerServer();
         }

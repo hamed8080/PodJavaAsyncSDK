@@ -10,7 +10,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public final class Async implements AsyncProviderListener {
-    private static final Logger logger = LogManager.getLogger(Async.class);
+    private static final Logger logger = LogManager.getContext().getLogger("SDK_LOGGER");
     private static AsyncProvider provider;
     private static final String TAG = "asyncSdk.Async" + " ";
     static final Gson gson = new Gson();
@@ -59,9 +59,12 @@ public final class Async implements AsyncProviderListener {
     @Override
     public void onMessage(String textMessage) {
         lastReceivedMessage = new Date();
-        scheduleConnectionTimer();
         AsyncMessage asyncMessage = gson.fromJson(textMessage, AsyncMessage.class);
+        if (connectionCheckTimer == null) {
+            scheduleConnectionTimer();
+        }
         AsyncMessageType type = asyncMessage.getType();
+        logger.info("ASYNC_SDK " + "On ReceiveMessage: " + type.toString()  + "\n" + textMessage + "\n");
         switch (type) {
             case Ack:
                 handleOnAck(asyncMessage);
@@ -91,13 +94,13 @@ public final class Async implements AsyncProviderListener {
             public void run() {
                 reconnectIfPossible();
             }
-        }, 0, config.getReconnectInterval());
+        }, config.getReconnectInterval(), config.getReconnectInterval());
     }
 
     private void reconnectIfPossible() {
         long triggerTime = lastReceivedMessage.getTime() + config.getCheckConnectionLastMessageInterval();
         boolean isPastTriggerTime = triggerTime < new Date().getTime();
-        if (reconnectCount <= config.getMaxReconnectCount() && isPastTriggerTime) {
+        if (reconnectCount <= config.getMaxReconnectCount() && isPastTriggerTime && state != AsyncState.AsyncReady) {
             reconnect();
         } else if (reconnectCount > config.getMaxReconnectCount()) {
             stopTimer();
@@ -154,7 +157,7 @@ public final class Async implements AsyncProviderListener {
                 asyncMessage.setType(messageType);
                 String json = gson.toJson(asyncMessage);
                 provider.send(json);
-                logger.info("Send message: " + json);
+                logger.info("ASYNC_SDK Send With type " + messageType + ": \n" + json  + "\n");
             } else {
                 showErrorLog(TAG + "Socket is not connected");
             }

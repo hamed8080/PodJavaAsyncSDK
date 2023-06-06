@@ -15,7 +15,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * Created By Khojasteh on 7/24/2019
  */
 public class ActiveMQProvider implements AsyncProvider {
-    private static final Logger logger = LogManager.getLogger(ActiveMQProvider.class);
+    private static final Logger logger = LogManager.getContext().getLogger("SDK_LOGGER");
     private MessageProducer producer;
     private MessageConsumer consumer;
 
