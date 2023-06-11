@@ -141,16 +141,9 @@ public final class Async implements AsyncProviderListener {
      * First we are checking the state of the socket then we send the message
      */
     @SuppressWarnings("unused")
-    public void sendMessage(String textContent, AsyncMessageType messageType, long[] receiversId) {
+    public void sendMessage(Message message, AsyncMessageType messageType) {
         try {
             if (state == AsyncState.AsyncReady) {
-                long ttl = new Date().getTime();
-                Message message = new Message();
-                message.setContent(textContent);
-                message.setPriority(1);
-                message.setPeerName(config.getServerName());
-                message.setTtl(ttl);
-                message.setReceivers(receiversId);
                 String messageContent = gson.toJson(message);
                 AsyncMessage asyncMessage = new AsyncMessage();
                 asyncMessage.setContent(messageContent);

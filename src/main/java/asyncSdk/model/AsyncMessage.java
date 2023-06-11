@@ -8,11 +8,11 @@ import lombok.*;
 @Getter
 @Setter
 public class AsyncMessage {
-    private long id;
+    private Long id;
     private int type;
-    private long senderMessageId;
-    private long senderId;
-    private long trackerId;
+    private Long senderMessageId;
+    private Long senderId;
+    private Long trackerId;
     private String senderName;
     private String content;
     private String address;

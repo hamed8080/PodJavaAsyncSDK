@@ -21,4 +21,5 @@ public class Message {
     private int priority;
     private long messageId;
     private long ttl;
+    private String uniqueId;
 }
